@@ -4,6 +4,7 @@ import '../services/events_service.dart';
 import 'event_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:meet_explore/core/widgets/app_drawer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EventsParticipatingScreen extends StatefulWidget {
   const EventsParticipatingScreen({super.key});
@@ -24,8 +25,22 @@ class _EventsParticipatingScreenState extends State<EventsParticipatingScreen> {
   }
 
   void _loadParticipatingEvents() {
-    // Fetch participating events via service method
-    _participatingEventsFuture = _eventsService.fetchParticipatingEvents();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      // Guest: empty list
+      _participatingEventsFuture = Future.value([]);
+      return;
+    }
+
+    _participatingEventsFuture = _fetchParticipatingEventsForUser(user.uid);
+  }
+
+  Future<List<EventModel>> _fetchParticipatingEventsForUser(String uid) async {
+    final ids = await _eventsService.fetchParticipatingEventIds();
+    final allEvents = await _eventsService.fetchEvents();
+    // Filter only events user participates in
+    return allEvents.where((event) => ids.contains(event.id)).toList();
   }
 
   @override
@@ -104,7 +119,7 @@ class _EventsParticipatingScreenState extends State<EventsParticipatingScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              event.description,
+                              event.detailedDescription,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),

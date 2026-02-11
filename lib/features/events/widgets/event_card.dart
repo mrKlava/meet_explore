@@ -46,7 +46,7 @@ class EventCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    event.description,
+                    event.detailedDescription,
                     style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

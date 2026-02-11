@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/event_model.dart';
 import '../services/events_service.dart';
-import 'package:intl/intl.dart';
 
 class EventDetailScreen extends StatefulWidget {
-  final int eventId;
+  final String eventId;
 
   const EventDetailScreen({super.key, required this.eventId});
 
@@ -14,34 +15,71 @@ class EventDetailScreen extends StatefulWidget {
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
   final EventsService _eventsService = EventsService();
+
   late Future<EventModel?> _eventFuture;
+  bool _isParticipating = false; // tracks participation
+  bool _loadingParticipation = true;
 
   @override
   void initState() {
     super.initState();
     _eventFuture = _eventsService.fetchEventById(widget.eventId);
+
+    // Check if user participates
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _eventsService.isParticipating(widget.eventId).then((value) {
+        setState(() {
+          _isParticipating = value;
+          _loadingParticipation = false;
+        });
+      });
+    } else {
+      _loadingParticipation = false;
+    }
   }
 
-  void _toggleParticipation(EventModel event) {
+  void _toggleParticipation(EventModel event) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Should not happen; button should be disabled
+      return;
+    }
+
     setState(() {
-      event.isParticipating = !event.isParticipating;
+      _isParticipating = !_isParticipating;
     });
 
-    // Optional: show snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          event.isParticipating
-              ? 'You are participating in this event.'
-              : 'You cancelled your participation.',
+    try {
+      if (_isParticipating) {
+        await _eventsService.participate(event.id);
+      } else {
+        await _eventsService.cancelParticipation(event.id);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isParticipating
+                ? 'You are participating in this event.'
+                : 'You cancelled your participation.',
+          ),
         ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+      );
+    } catch (e) {
+      setState(() {
+        _isParticipating = !_isParticipating;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update participation: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isUser = FirebaseAuth.instance.currentUser != null;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Event Details')),
       body: FutureBuilder<EventModel?>(
@@ -57,13 +95,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
           final event = snapshot.data!;
 
-          // Only body part updated; rest stays the same
           return Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  bottom: 100,
-                ), // leave space for button
+                padding: const EdgeInsets.only(bottom: 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -80,7 +115,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         children: [
                           Text(
                             event.title,
-                            style: Theme.of(context).textTheme.headlineSmall
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
@@ -104,11 +141,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             children: [
                               const Icon(Icons.calendar_today, size: 18),
                               const SizedBox(width: 6),
-                              Text(
-                                DateFormat(
-                                  'MMM dd, yyyy • HH:mm',
-                                ).format(event.dateTime),
-                              ),
+                              Text(DateFormat('MMM dd, yyyy • HH:mm')
+                                  .format(event.dateTime)),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -120,14 +154,15 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             ],
                           ),
                           const SizedBox(height: 6),
-                          
-                            Row(
-                              children: [
-                                const Icon(Icons.euro, size: 18),
-                                const SizedBox(width: 6),
-                                Text(event.price > 0 ?event.price.toStringAsFixed(2) : 'Free'),
-                              ],
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.euro, size: 18),
+                              const SizedBox(width: 6),
+                              Text(event.price > 0
+                                  ? event.price.toStringAsFixed(2)
+                                  : 'Free'),
+                            ],
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             event.detailedDescription,
@@ -141,35 +176,56 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               ),
 
               // Sticky bottom button
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 16,
-                child: ElevatedButton.icon(
-                  onPressed: () => _toggleParticipation(event),
-                  icon: Icon(
-                    event.isParticipating
-                        ? Icons.cancel
-                        : Icons.check_circle_outline,
-                  ),
-                  label: Text(
-                    event.isParticipating
-                        ? 'Cancel Participation'
-                        : 'Participate',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: event.isParticipating
-                        ? Colors.red
-                        : Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              if (!_loadingParticipation)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                  child: ElevatedButton.icon(
+                    onPressed: isUser
+                        ? () => _toggleParticipation(event)
+                        : () {
+                            // Guest: show dialog
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Sign In Required'),
+                                content: const Text(
+                                    'You need to sign in to participate in events.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      // TODO: navigate to login screen
+                                      Navigator.pushNamed(context, '/login');
+                                    },
+                                    child: const Text('Sign In'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                    icon: Icon(
+                        _isParticipating ? Icons.cancel : Icons.check_circle_outline),
+                    label: Text(
+                        _isParticipating ? 'Cancel Participation' : 'Participate'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isParticipating
+                          ? Colors.red
+                          : Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 6,
                     ),
-                    elevation: 6,
                   ),
                 ),
-              ),
             ],
           );
         },

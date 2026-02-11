@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:meet_explore/core/widgets/app_drawer.dart';
 
-import '../services/events_service.dart';
-import '../models/event_model.dart';
-import '../widgets/event_card.dart';
+import 'package:meet_explore/features/events/services/events_service.dart';
+import 'package:meet_explore/features/events/models/event_model.dart';
+import 'package:meet_explore/features/events/widgets/event_card.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -42,6 +42,12 @@ class _EventsScreenState extends State<EventsScreen> {
           }
 
           final events = snapshot.data ?? [];
+
+          if (events.isEmpty) {
+            return const Center(
+              child: Text('You are not participating in any events yet.'),
+            );
+          }
 
           return ListView.builder(
             itemCount: events.length,
