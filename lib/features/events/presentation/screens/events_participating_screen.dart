@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/event_model.dart';
-import '../services/events_service.dart';
+import '../../data/models/event_model.dart';
+import '../../data/services/events_service.dart';
 import 'event_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:meet_explore/core/widgets/app_drawer.dart';

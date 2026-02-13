@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:meet_explore/features/contacts/screens/contacts_screen.dart';
-import '../features/events/screens/events_screen.dart';
-import '../features/events/screens/events_participating_screen.dart';
-import '../features/events/screens/event_detail_screen.dart';
-import '../features/about/screens/about_screen.dart';
+import '../features/events/presentation/screens/events_screen.dart';
+import '../features/events/presentation/screens/events_participating_screen.dart';
+import '../features/events/presentation/screens/event_detail_screen.dart';
+import '../features/about/presentation/screens/about_screen.dart';
 import 'package:meet_explore/features/auth/screens/login_screen.dart';
 import 'package:meet_explore/features/auth/screens/sign_up_screen.dart';
 

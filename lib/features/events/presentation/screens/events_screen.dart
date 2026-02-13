@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:meet_explore/core/widgets/app_drawer.dart';
 
-import 'package:meet_explore/features/events/services/events_service.dart';
-import 'package:meet_explore/features/events/models/event_model.dart';
-import 'package:meet_explore/features/events/widgets/event_card.dart';
+import 'package:meet_explore/features/events/data/services/events_service.dart';
+import 'package:meet_explore/features/events/data/models/event_model.dart';
+import 'package:meet_explore/features/events/presentation/widgets/event_card.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});

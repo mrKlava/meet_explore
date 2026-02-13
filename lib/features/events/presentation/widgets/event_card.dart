@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/event_model.dart';
+import '../../data/models/event_model.dart';
 import '../screens/event_detail_screen.dart';
 import 'package:intl/intl.dart';
 
