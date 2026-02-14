@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
-import 'routes/app_routes.dart';
-import 'core/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyApp extends StatelessWidget {
+import 'routes/app_routes.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
+
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: AuthService().authStateChanges(),
-      builder: (context, snapshot) {
-        final isUser = snapshot.hasData;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return authState.when(
+      loading: () => const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+
+      error: (error, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(child: Text('Auth error: $error')),
+        ),
+      ),
+
+      data: (user) {
+        final isLoggedIn = user != null;
 
         return MaterialApp(
           title: 'Meet & Explore Pau',
@@ -22,13 +40,14 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             appBarTheme: const AppBarTheme(centerTitle: true),
           ),
-          initialRoute: AppRoutes.events,
+
+          // 🔥 IMPORTANT CHANGE
+          home: isLoggedIn
+              ? AppRoutes.routes[AppRoutes.events]!(context)
+              : const LoginScreen(),
+
           routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.generateRoute,
-          builder: (context, child) {
-            // You could inject AuthService to child widgets if needed
-            return child!;
-          },
         );
       },
     );

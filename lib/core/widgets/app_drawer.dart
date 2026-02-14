@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../core/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meet_explore/features/auth/presentation/providers/auth_controller.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authService = AuthService();
-    final isUser = authService.isSignedIn;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+
+    // Determine if user is signed in
+    final isUser = authState.when(
+      data: (user) => user != null,
+      loading: () => false,
+      error: (_, __) => false,
+    );
 
     return Drawer(
       child: Column(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/drawer_header.png'),
                 fit: BoxFit.cover,
               ),
             ),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: null
-              // child: Text(
-              //   'Meet & Explore Pau',
-              //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              //     color: Colors.white,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-            ),
+            child: Align(alignment: Alignment.bottomLeft, child: null),
           ),
 
-          // Events
           ListTile(
             leading: const Icon(Icons.event),
             title: const Text('Events'),
@@ -40,17 +37,18 @@ class AppDrawer extends StatelessWidget {
             },
           ),
 
-          // Participating (only for authenticated users)
           if (isUser)
             ListTile(
               leading: const Icon(Icons.bookmark_added_outlined),
               title: const Text('Participating'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/events-participating');
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/events-participating',
+                );
               },
             ),
 
-          // About
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
@@ -59,7 +57,6 @@ class AppDrawer extends StatelessWidget {
             },
           ),
 
-          // Contacts
           ListTile(
             leading: const Icon(Icons.email_outlined),
             title: const Text('Contacts'),
@@ -70,17 +67,14 @@ class AppDrawer extends StatelessWidget {
 
           const Spacer(),
 
-          // Auth action (Sign In or Logout)
           ListTile(
             leading: Icon(isUser ? Icons.logout : Icons.login),
             title: Text(isUser ? 'Logout' : 'Sign In'),
             onTap: () async {
               if (isUser) {
-                // Logout
-                await authService.signOut();
-                Navigator.pushReplacementNamed(context, '/events');
+                await ref.read(authControllerProvider.notifier).signOut();
+                // No Navigator call here
               } else {
-                // Navigate to login
                 Navigator.pushNamed(context, '/login');
               }
             },
