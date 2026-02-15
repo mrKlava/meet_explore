@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:meet_explore/core/widgets/app_drawer.dart';
 import 'package:meet_explore/features/contacts/presentation/widgets/contact_form_card.dart';
 import 'package:meet_explore/features/contacts/presentation/widgets/social_section.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../domain/entities/contact_message.dart';
 import '../providers/contact_provider.dart';
 
@@ -66,12 +66,8 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(contactControllerProvider);
 
-    return Scaffold(
-      drawer: const AppDrawer(),
-      appBar: AppBar(
-        title: const Text(AppStrings.contactTitle),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
+    return AppScaffold(
+      title: AppStrings.contactTitle,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimens.space16),
         child: Column(

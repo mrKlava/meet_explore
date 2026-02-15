@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/app_state_views.dart';
 import '../../../../routes/app_routes.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -94,11 +95,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final eventAsync = ref.watch(eventByIdProvider(widget.eventId));
     final participationAsync = ref.watch(isParticipatingProvider(widget.eventId));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.eventDetailsTitle)),
+    return AppScaffold(
+      title: AppStrings.eventDetailsTitle,
+      showDrawer: false,
       body: eventAsync.when(
         loading: () => const AppLoadingView(),
-        error: (error, _) => AppErrorView(error: error, prefix: AppStrings.errorPrefix),
+        error: (error, _) =>
+            AppErrorView(error: error, prefix: AppStrings.errorPrefix),
         data: (event) {
           if (event == null) {
             return const AppEmptyView(message: AppStrings.eventNotFound);
@@ -109,7 +112,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             orElse: () => false,
           );
           final isParticipating = isAuthenticated && rawIsParticipating;
-          final participationReady = !isAuthenticated || participationAsync.hasValue;
+          final participationReady =
+              !isAuthenticated || participationAsync.hasValue;
 
           return Stack(
             children: [

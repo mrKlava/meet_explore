@@ -41,6 +41,7 @@ dependencies:
   firebase_auth: ^4.20.0
   cloud_firestore: ^4.15.0
   flutter_riverpod: ^2.5.0
+  font_awesome_flutter: ^10.8.0
 
 
 
@@ -102,3 +103,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+

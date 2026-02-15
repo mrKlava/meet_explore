@@ -52,7 +52,7 @@ class AppAssets {
 class AppLinks {
   static const String instagram = 'https://www.instagram.com/meetexplorepau?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
   static const String facebook = 'https://facebook.com/groups/meetexplorepau';
-  static const String whatsapp = 'https://wa.me/1234567890';
+  static const String whatsapp = 'https://chat.whatsapp.com/EQpscJ2fzDl6WlN04ZS3nQ';
 }
 
 class AppStrings {

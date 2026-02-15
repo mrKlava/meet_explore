@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import 'social_button.dart';
@@ -19,19 +20,22 @@ class SocialSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             SocialButton(
-              icon: Icons.camera_alt,
+              icon: FontAwesomeIcons.instagram,
               color: AppColors.instagram,
               url: AppLinks.instagram,
+              label: 'Instagram Account',
             ),
             SocialButton(
-              icon: Icons.facebook,
+              icon: FontAwesomeIcons.facebookF,
               color: AppColors.facebook,
               url: AppLinks.facebook,
+              label: 'Facebook Group',
             ),
             SocialButton(
-              icon: Icons.message,
+              icon: FontAwesomeIcons.whatsapp,
               color: AppColors.whatsapp,
               url: AppLinks.whatsapp,
+              label: 'WhatsApp Group',
             ),
           ],
         ),

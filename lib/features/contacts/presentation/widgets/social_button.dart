@@ -7,12 +7,14 @@ class SocialButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String url;
+  final String label;
 
   const SocialButton({
     super.key,
     required this.icon,
     required this.color,
     required this.url,
+    required this.label,
   });
 
   Future<void> _launch(String url, BuildContext context) async {
@@ -36,26 +38,33 @@ class SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _launch(url, context),
-      borderRadius: BorderRadius.circular(AppDimens.radius50),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimens.space12),
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: AppDimens.space4,
-              offset: Offset(0, 2),
+    return Semantics(
+      label: label,
+      button: true,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          onTap: () => _launch(url, context),
+          borderRadius: BorderRadius.circular(AppDimens.radius50),
+          child: Container(
+            padding: const EdgeInsets.all(AppDimens.space12),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.shadow,
+                  blurRadius: AppDimens.space4,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.onPrimary,
-          size: AppDimens.icon28,
+            child: Icon(
+              icon,
+              color: AppColors.onPrimary,
+              size: AppDimens.icon28,
+            ),
+          ),
         ),
       ),
     );
