@@ -18,7 +18,7 @@ class AboutImage extends StatelessWidget {
         url,
         width: double.infinity,
         height: height,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
       ),
     );
   }

@@ -55,13 +55,6 @@ class AppDrawer extends ConsumerWidget {
               Navigator.pushReplacementNamed(context, AppRoutes.about);
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.email_outlined),
-            title: const Text(AppStrings.drawerContacts),
-            onTap: () {
-              Navigator.pushReplacementNamed(context, AppRoutes.contacts);
-            },
-          ),
           const Spacer(),
           ListTile(
             leading: Icon(isAuthenticated ? Icons.logout : Icons.login),

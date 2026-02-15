@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../contacts/presentation/widgets/social_section.dart';
 import '../../domain/entities/about_info.dart';
 import 'about_image.dart';
 import 'about_text_section.dart';
@@ -31,6 +32,8 @@ class AboutContent extends StatelessWidget {
           const SizedBox(height: 16),
 
           AboutImage(url: about.footerImageUrl, height: 200),
+          const SizedBox(height: 24),
+          const SocialSection(),
         ],
       ),
     );
