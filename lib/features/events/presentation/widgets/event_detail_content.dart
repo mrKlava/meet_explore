@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -69,6 +71,8 @@ class EventDetailContent extends StatelessWidget {
                 _LocationSection(
                   address: event.address,
                   locationUrl: event.locationUrl,
+                  geoLat: event.geoLat,
+                  geoLng: event.geoLng,
                 ),
                 if (event.info.isNotEmpty)
                   _TextSection(
@@ -180,10 +184,14 @@ class _TextSection extends StatelessWidget {
 class _LocationSection extends StatelessWidget {
   final String address;
   final String locationUrl;
+  final double? geoLat;
+  final double? geoLng;
 
   const _LocationSection({
     required this.address,
     required this.locationUrl,
+    required this.geoLat,
+    required this.geoLng,
   });
 
   Future<void> _openLocation(BuildContext context) async {
@@ -204,6 +212,7 @@ class _LocationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasLink = locationUrl.isNotEmpty;
+    final hasCoordinates = geoLat != null && geoLng != null;
     final displayAddress = address.isNotEmpty ? address : '-';
 
     return Padding(
@@ -219,6 +228,41 @@ class _LocationSection extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppDimens.space6),
+          if (hasCoordinates) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimens.radius12),
+              child: SizedBox(
+                height: 180,
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(geoLat!, geoLng!),
+                    initialZoom: 15,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.meet_explore',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(geoLat!, geoLng!),
+                          width: 40,
+                          height: 40,
+                          child: const Icon(
+                            Icons.location_pin,
+                            color: Colors.red,
+                            size: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppDimens.space8),
+          ],
           if (hasLink)
             InkWell(
               onTap: () => _openLocation(context),
@@ -236,4 +280,6 @@ class _LocationSection extends StatelessWidget {
       ),
     );
   }
+
 }
+
