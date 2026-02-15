@@ -45,27 +45,49 @@ class EventDetailContent extends StatelessWidget {
                 _MetaRow(icon: Icons.category, text: event.category),
                 _MetaRow(
                   icon: Icons.calendar_today,
-                  text: DateFormat(AppDateFormats.eventDateTime)
-                      .format(event.dateTime),
+                  text: _buildDateRange(event),
                 ),
-                _MetaRow(icon: Icons.location_on, text: event.location),
+                _MetaRow(icon: Icons.location_on, text: event.fullLocation),
                 _MetaRow(
                   icon: Icons.euro,
                   text: event.price > 0
                       ? event.price.toStringAsFixed(2)
                       : AppStrings.free,
                 ),
-                const SizedBox(height: AppDimens.space16),
-                Text(
-                  event.detailedDescription,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                _MetaRow(icon: Icons.groups, text: '${event.places} places'),
+                _MetaRow(
+                  icon: Icons.flag,
+                  text: 'Status: ${event.status}',
                 ),
+                const SizedBox(height: AppDimens.space16),
+                if (event.description.isNotEmpty)
+                  _TextSection(
+                    title: 'Description',
+                    items: event.description,
+                  ),
+                if (event.info.isNotEmpty)
+                  _TextSection(
+                    title: 'Info',
+                    items: event.info,
+                  ),
+                if (event.infoImportant.isNotEmpty)
+                  _TextSection(
+                    title: 'Important Info',
+                    items: event.infoImportant,
+                  ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _buildDateRange(Event event) {
+    final start = DateFormat(AppDateFormats.eventDateTime).format(event.dateStart);
+    if (event.dateEnd == null) return start;
+    final end = DateFormat(AppDateFormats.eventDateTime).format(event.dateEnd!);
+    return '$start - $end';
   }
 }
 
@@ -92,3 +114,39 @@ class _MetaRow extends StatelessWidget {
     );
   }
 }
+
+class _TextSection extends StatelessWidget {
+  final String title;
+  final List<String> items;
+
+  const _TextSection({
+    required this.title,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.space12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: AppDimens.space6),
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: AppDimens.space8),
+                child: Text(item),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+

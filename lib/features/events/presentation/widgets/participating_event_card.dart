@@ -51,7 +51,7 @@ class ParticipatingEventCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimens.space6),
                   Text(
-                    event.detailedDescription,
+                    event.descriptionText,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -62,14 +62,14 @@ class ParticipatingEventCard extends StatelessWidget {
                       const SizedBox(width: AppDimens.space4),
                       Text(
                         DateFormat(AppDateFormats.eventShortDateTime)
-                            .format(event.dateTime),
+                            .format(event.dateStart),
                       ),
                       const SizedBox(width: AppDimens.space12),
                       const Icon(Icons.location_on, size: AppDimens.icon16),
                       const SizedBox(width: AppDimens.space4),
                       Expanded(
                         child: Text(
-                          event.location,
+                          event.shortLocation,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

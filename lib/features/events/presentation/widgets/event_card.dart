@@ -12,8 +12,8 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        DateFormat(AppDateFormats.eventDateTime).format(event.dateTime);
+    final formattedDate = DateFormat(AppDateFormats.eventDateTime)
+        .format(event.dateStart);
 
     return GestureDetector(
       onTap: () {
@@ -51,7 +51,7 @@ class EventCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimens.space6),
                   Text(
-                    event.detailedDescription,
+                    event.descriptionText,
                     style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -69,7 +69,7 @@ class EventCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.location_on, size: AppDimens.icon16),
                       const SizedBox(width: AppDimens.space6),
-                      Text(event.location),
+                      Expanded(child: Text(event.shortLocation)),
                     ],
                   ),
                 ],

@@ -14,7 +14,12 @@ class EventsRemoteService {
         _auth = auth ?? FirebaseAuth.instance;
 
   Future<List<EventModel>> fetchEvents() async {
-    final snapshot = await _firestore.collection('events').get();
+    final snapshot = await _firestore
+        .collection('events')
+        .where('isPublished', isEqualTo: true)
+        .orderBy('dateStart')
+        .get();
+
     return snapshot.docs.map((doc) => EventModel.fromFirestore(doc)).toList();
   }
 
