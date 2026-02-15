@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/event.dart';
@@ -47,17 +48,17 @@ class EventDetailContent extends StatelessWidget {
                   icon: Icons.calendar_today,
                   text: _buildDateRange(event),
                 ),
-                _MetaRow(icon: Icons.location_on, text: event.fullLocation),
+                _MetaRow(icon: Icons.location_on, text: event.shortLocation),
+                if (event.hasLimitedPlaces)
+                  _MetaRow(
+                    icon: Icons.groups,
+                    text: '${event.availablePlaces} places available',
+                  ),
                 _MetaRow(
                   icon: Icons.euro,
                   text: event.price > 0
                       ? event.price.toStringAsFixed(2)
                       : AppStrings.free,
-                ),
-                _MetaRow(icon: Icons.groups, text: '${event.places} places'),
-                _MetaRow(
-                  icon: Icons.flag,
-                  text: 'Status: ${event.status}',
                 ),
                 const SizedBox(height: AppDimens.space16),
                 if (event.description.isNotEmpty)
@@ -65,6 +66,10 @@ class EventDetailContent extends StatelessWidget {
                     title: 'Description',
                     items: event.description,
                   ),
+                _LocationSection(
+                  address: event.address,
+                  locationUrl: event.locationUrl,
+                ),
                 if (event.info.isNotEmpty)
                   _TextSection(
                     title: 'Info',
@@ -84,10 +89,33 @@ class EventDetailContent extends StatelessWidget {
   }
 
   String _buildDateRange(Event event) {
-    final start = DateFormat(AppDateFormats.eventDateTime).format(event.dateStart);
-    if (event.dateEnd == null) return start;
-    final end = DateFormat(AppDateFormats.eventDateTime).format(event.dateEnd!);
-    return '$start - $end';
+    final start = event.dateStart;
+    final end = event.dateEnd;
+
+    if (end == null) {
+      return DateFormat(AppDateFormats.eventDateTime).format(start);
+    }
+
+    final isSameDay = start.year == end.year &&
+        start.month == end.month &&
+        start.day == end.day;
+
+    if (isSameDay) {
+      final sameTime =
+          start.hour == end.hour && start.minute == end.minute;
+      if (sameTime) {
+        return DateFormat(AppDateFormats.eventDateTime).format(start);
+      }
+
+      final datePart = DateFormat('MMM dd, yyyy').format(start);
+      final startTime = DateFormat('HH:mm').format(start);
+      final endTime = DateFormat('HH:mm').format(end);
+      return '$datePart, $startTime - $endTime';
+    }
+
+    final startText = DateFormat(AppDateFormats.eventDateTime).format(start);
+    final endText = DateFormat(AppDateFormats.eventDateTime).format(end);
+    return '$startText - $endText';
   }
 }
 
@@ -149,4 +177,63 @@ class _TextSection extends StatelessWidget {
   }
 }
 
+class _LocationSection extends StatelessWidget {
+  final String address;
+  final String locationUrl;
 
+  const _LocationSection({
+    required this.address,
+    required this.locationUrl,
+  });
+
+  Future<void> _openLocation(BuildContext context) async {
+    if (locationUrl.isEmpty) return;
+
+    final opened = await launchUrlString(
+      locationUrl,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${AppStrings.couldNotOpenPrefix} $locationUrl')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasLink = locationUrl.isNotEmpty;
+    final displayAddress = address.isNotEmpty ? address : '-';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimens.space12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Location',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: AppDimens.space6),
+          if (hasLink)
+            InkWell(
+              onTap: () => _openLocation(context),
+              child: Text(
+                displayAddress,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            )
+          else
+            Text(displayAddress),
+        ],
+      ),
+    );
+  }
+}

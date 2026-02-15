@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/app_constants.dart';
 import 'routes/app_routes.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/auth/presentation/screens/sign_in_screen.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -42,7 +41,7 @@ class MyApp extends ConsumerWidget {
           ),
           home: isLoggedIn
               ? AppRoutes.routes[AppRoutes.events]!(context)
-              : const SignInScreen(),
+              : AppRoutes.routes[AppRoutes.events]!(context),
           routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.generateRoute,
         );

@@ -18,6 +18,7 @@ class EventRepositoryImpl implements EventRepository {
       status: model.status,
       isPublished: model.isPublished,
       places: model.places,
+      participantsCount: model.participantsCount,
       price: model.price,
       dateStart: model.dateStart,
       dateEnd: model.dateEnd,

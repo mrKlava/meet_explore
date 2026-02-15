@@ -9,6 +9,7 @@ class EventModel {
   final String status;
   final bool isPublished;
   final int places;
+  final int participantsCount;
   final double price;
 
   final DateTime dateStart;
@@ -36,6 +37,7 @@ class EventModel {
     required this.status,
     required this.isPublished,
     required this.places,
+    required this.participantsCount,
     required this.price,
     required this.dateStart,
     required this.dateEnd,
@@ -63,6 +65,7 @@ class EventModel {
       status: (data['status'] ?? 'scheduled').toString(),
       isPublished: data['isPublished'] == true,
       places: _toInt(data['places']),
+      participantsCount: _toInt(data['participantsCount']),
       price: _toDouble(data['price']),
       dateStart: _toDate(data['dateStart']),
       dateEnd: _toNullableDate(data['dateEnd']),

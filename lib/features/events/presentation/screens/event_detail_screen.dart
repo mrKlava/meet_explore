@@ -36,6 +36,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       }
 
       ref.invalidate(isParticipatingProvider(widget.eventId));
+      ref.invalidate(eventByIdProvider(widget.eventId));
+      ref.invalidate(eventsProvider);
       ref.invalidate(participatingEventsProvider);
 
       if (!mounted) return;
@@ -112,6 +114,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             orElse: () => false,
           );
           final isParticipating = isAuthenticated && rawIsParticipating;
+          final isFull =
+              event.hasLimitedPlaces && event.availablePlaces == 0 && !isParticipating;
           final participationReady =
               !isAuthenticated || participationAsync.hasValue;
 
@@ -127,6 +131,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     isLoading: _isUpdatingParticipation,
                     isParticipating: isParticipating,
                     isAuthenticated: isAuthenticated,
+                    isFull: isFull,
                     onAuthenticatedTap: () =>
                         _toggleParticipation(event, isParticipating),
                     onGuestTap: _showSignInDialog,

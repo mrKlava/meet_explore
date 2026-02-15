@@ -50,3 +50,7 @@ lib/firebase_options.dart
 linux/flutter/generated_plugin_registrant.*
 macos/Flutter/GeneratedPluginRegistrant.swift
 windows/flutter/generated_plugin_registrant.*
+
+# firebase
+lib/firebase_options.dart
+firestore.rules

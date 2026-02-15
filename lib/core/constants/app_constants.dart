@@ -93,6 +93,7 @@ class AppStrings {
   static const String free = 'Free';
   static const String participate = 'Participate';
   static const String cancelParticipation = 'Cancel Participation';
+  static const String eventFull = 'Event Full';
   static const String participationCancelled = 'You cancelled your participation.';
   static const String participationSuccess =
       'You are participating in this event.';

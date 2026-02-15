@@ -7,6 +7,7 @@ class Event {
   final String status;
   final bool isPublished;
   final int places;
+  final int participantsCount;
   final double price;
 
   final DateTime dateStart;
@@ -35,6 +36,7 @@ class Event {
     required this.status,
     required this.isPublished,
     required this.places,
+    required this.participantsCount,
     required this.price,
     required this.dateStart,
     required this.dateEnd,
@@ -66,4 +68,12 @@ class Event {
   }
 
   String get descriptionText => description.join('\n');
+
+  bool get hasLimitedPlaces => places > 0;
+
+  int get availablePlaces {
+    if (!hasLimitedPlaces) return 0;
+    final available = places - participantsCount;
+    return available > 0 ? available : 0;
+  }
 }
