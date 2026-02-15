@@ -46,7 +46,7 @@ class AppDateFormats {
 }
 
 class AppAssets {
-  static const String drawerHeader = 'assets/drawer_header.png';
+  static const String drawerHeader = 'assets/drawer_header.jpg';
 }
 
 class AppLinks {
