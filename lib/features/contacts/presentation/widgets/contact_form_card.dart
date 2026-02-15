@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:meet_explore/features/contacts/presentation/widgets/contact_text_field.dart';
+
+import '../../../../core/constants/app_constants.dart';
+import 'contact_text_field.dart';
 
 class ContactFormCard extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -24,68 +26,68 @@ class ContactFormCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
+      elevation: AppDimens.elevation4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDimens.radius16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.space16),
         child: Form(
           key: formKey,
           child: Column(
             children: [
               ContactTextField(
                 controller: firstNameController,
-                label: 'First Name',
+                label: AppStrings.firstName,
                 icon: Icons.person,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                    value == null || value.isEmpty ? AppStrings.required : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimens.space12),
               ContactTextField(
                 controller: lastNameController,
-                label: 'Last Name',
+                label: AppStrings.lastName,
                 icon: Icons.person_outline,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                    value == null || value.isEmpty ? AppStrings.required : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimens.space12),
               ContactTextField(
                 controller: emailController,
-                label: 'Email',
+                label: AppStrings.fieldEmail,
                 icon: Icons.email,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Required';
+                  if (value == null || value.isEmpty) return AppStrings.required;
                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Invalid email';
+                    return AppStrings.invalidEmail;
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimens.space12),
               ContactTextField(
                 controller: messageController,
-                label: 'Message',
+                label: AppStrings.message,
                 icon: Icons.message,
                 maxLines: 4,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Required' : null,
+                    value == null || value.isEmpty ? AppStrings.required : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimens.space16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : onSubmit,
                   child: isLoading
                       ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: AppDimens.space24,
+                          height: AppDimens.space24,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Send Message'),
+                      : const Text(AppStrings.sendMessage),
                 ),
               ),
             ],

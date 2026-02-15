@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/event.dart';
 import '../screens/event_detail_screen.dart';
 
@@ -12,7 +13,7 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate =
-        DateFormat('MMM dd, yyyy - HH:mm').format(event.dateTime);
+        DateFormat(AppDateFormats.eventDateTime).format(event.dateTime);
 
     return GestureDetector(
       onTap: () {
@@ -24,20 +25,23 @@ class EventCard extends StatelessWidget {
         );
       },
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimens.space16,
+          vertical: AppDimens.space8,
+        ),
         clipBehavior: Clip.antiAlias,
-        elevation: 3,
+        elevation: AppDimens.elevation3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.network(
               event.imageUrl,
-              height: 180,
+              height: AppDimens.eventCardImageHeight,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppDimens.space12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,26 +49,26 @@ class EventCard extends StatelessWidget {
                     event.title,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppDimens.space6),
                   Text(
                     event.detailedDescription,
                     style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppDimens.space10),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 16),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.calendar_today, size: AppDimens.icon16),
+                      const SizedBox(width: AppDimens.space6),
                       Text(formattedDate),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppDimens.space6),
                   Row(
                     children: [
-                      const Icon(Icons.location_on, size: 16),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.location_on, size: AppDimens.icon16),
+                      const SizedBox(width: AppDimens.space6),
                       Text(event.location),
                     ],
                   ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_constants.dart';
+
 class ContactTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -26,10 +28,10 @@ class ContactTextField extends StatelessWidget {
         labelText: label,
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimens.radius12),
         ),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: AppColors.fieldFill,
       ),
     );
   }

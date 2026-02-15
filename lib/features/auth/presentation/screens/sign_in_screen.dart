@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_controller.dart';
-import 'sign_up_screen.dart';
-import '../widgets/auth_form.dart';
+
+import '../../../../core/constants/app_constants.dart';
 import '../../../../routes/app_routes.dart';
+import '../providers/auth_controller.dart';
+import '../widgets/auth_form.dart';
+import 'sign_up_screen.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -40,27 +42,31 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     ref.listen(authControllerProvider, (previous, next) {
       next.when(
         data: (user) {
-          if (user != null) Navigator.pushReplacementNamed(context, AppRoutes.events);
+          if (user != null) {
+            Navigator.pushReplacementNamed(context, AppRoutes.events);
+          }
         },
         loading: () {},
         error: (error, _) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login failed: $error')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${AppStrings.loginFailed}: $error')),
+          );
         },
       );
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text(AppStrings.signInTitle)),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.space16),
         child: AuthForm(
           formKey: _formKey,
           emailController: _emailController,
           passwordController: _passwordController,
           isLoading: isLoading,
-          buttonText: 'Login',
+          buttonText: AppStrings.signInTitle,
           onSubmit: _login,
-          secondaryText: "Don't have an account? Sign Up",
+          secondaryText: AppStrings.dontHaveAccount,
           onSecondaryTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SignUpScreen()),
@@ -70,5 +76,3 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     );
   }
 }
-
-

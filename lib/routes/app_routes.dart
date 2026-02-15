@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meet_explore/features/contacts/presentation/screens/contacts_screen.dart';
+
+import '../core/constants/app_constants.dart';
 import '../features/events/presentation/screens/events_screen.dart';
 import '../features/events/presentation/screens/events_participating_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
@@ -36,7 +38,7 @@ class AppRoutes {
         }
         return MaterialPageRoute(
           builder: (_) => const Scaffold(
-            body: Center(child: Text('Invalid event id.')),
+            body: Center(child: Text(AppStrings.invalidEventId)),
           ),
         );
       default:
@@ -44,4 +46,3 @@ class AppRoutes {
     }
   }
 }
-

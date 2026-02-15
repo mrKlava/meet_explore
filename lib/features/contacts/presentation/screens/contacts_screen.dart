@@ -4,6 +4,7 @@ import 'package:meet_explore/core/widgets/app_drawer.dart';
 import 'package:meet_explore/features/contacts/presentation/widgets/contact_form_card.dart';
 import 'package:meet_explore/features/contacts/presentation/widgets/social_section.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/contact_message.dart';
 import '../providers/contact_provider.dart';
 
@@ -45,7 +46,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
     ref.read(contactControllerProvider).whenOrNull(
       data: (_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Message sent successfully!')),
+          const SnackBar(content: Text(AppStrings.contactSuccess)),
         );
 
         _firstNameController.clear();
@@ -54,8 +55,9 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
         _messageController.clear();
       },
       error: (e, _) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.contactErrorPrefix}: $e')),
+        );
       },
     );
   }
@@ -67,11 +69,11 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Contact Us'),
+        title: const Text(AppStrings.contactTitle),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.space16),
         child: Column(
           children: [
             ContactFormCard(
@@ -83,7 +85,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
               isLoading: state.isLoading,
               onSubmit: _submitForm,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimens.space24),
             const SocialSection(),
           ],
         ),

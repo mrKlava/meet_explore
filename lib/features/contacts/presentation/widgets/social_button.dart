@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../../core/constants/app_constants.dart';
+
 class SocialButton extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -20,13 +22,15 @@ class SocialButton extends StatelessWidget {
         mode: LaunchMode.externalApplication,
       )) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Could not open $url')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.couldNotOpenPrefix} $url')),
+        );
       }
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${AppStrings.errorPrefix}: $e')),
+      );
     }
   }
 
@@ -34,21 +38,25 @@ class SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => _launch(url, context),
-      borderRadius: BorderRadius.circular(50),
+      borderRadius: BorderRadius.circular(AppDimens.radius50),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppDimens.space12),
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
-              blurRadius: 4,
+              color: AppColors.shadow,
+              blurRadius: AppDimens.space4,
               offset: Offset(0, 2),
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 28),
+        child: Icon(
+          icon,
+          color: AppColors.onPrimary,
+          size: AppDimens.icon28,
+        ),
       ),
     );
   }

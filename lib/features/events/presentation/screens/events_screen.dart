@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meet_explore/core/widgets/app_drawer.dart';
+import 'package:meet_explore/core/widgets/app_state_views.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../providers/events_provider.dart';
 import '../widgets/event_card.dart';
 
@@ -15,17 +17,15 @@ class EventsScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Events'),
+        title: const Text(AppStrings.eventsTitle),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: eventsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => const Center(child: Text('Failed to load events')),
+        loading: () => const AppLoadingView(),
+        error: (error, _) => const AppEmptyView(message: AppStrings.eventsLoadFailed),
         data: (events) {
           if (events.isEmpty) {
-            return const Center(
-              child: Text('No events available yet.'),
-            );
+            return const AppEmptyView(message: AppStrings.eventsEmpty);
           }
 
           return RefreshIndicator(
@@ -45,5 +45,3 @@ class EventsScreen extends ConsumerWidget {
     );
   }
 }
-
-

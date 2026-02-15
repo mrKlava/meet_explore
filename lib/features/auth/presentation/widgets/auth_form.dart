@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_constants.dart';
+
 typedef AuthCallback = Future<void> Function();
 
 class AuthForm extends StatelessWidget {
@@ -32,17 +34,21 @@ class AuthForm extends StatelessWidget {
         children: [
           TextFormField(
             controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-            validator: (v) => (v == null || !v.contains('@')) ? 'Enter valid email' : null,
+            decoration: const InputDecoration(labelText: AppStrings.fieldEmail),
+            validator: (v) =>
+                (v == null || !v.contains('@')) ? AppStrings.validateEmail : null,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimens.space12),
           TextFormField(
             controller: passwordController,
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration:
+                const InputDecoration(labelText: AppStrings.fieldPassword),
             obscureText: true,
-            validator: (v) => (v == null || v.length < 6) ? 'Password must be at least 6 chars' : null,
+            validator: (v) => (v == null || v.length < 6)
+                ? AppStrings.validatePassword
+                : null,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppDimens.space24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -53,14 +59,14 @@ class AuthForm extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                       ),
                     )
                   : Text(buttonText),
             ),
           ),
           if (secondaryText != null && onSecondaryTap != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimens.space12),
             TextButton(onPressed: onSecondaryTap, child: Text(secondaryText!)),
           ],
         ],

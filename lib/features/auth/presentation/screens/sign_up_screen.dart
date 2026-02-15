@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/constants/app_constants.dart';
+import '../../../../routes/app_routes.dart';
 import '../providers/auth_controller.dart';
 import '../widgets/auth_form.dart';
-import '../../../../routes/app_routes.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -39,28 +41,31 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.listen(authControllerProvider, (previous, next) {
       next.whenOrNull(
         data: (user) {
-          if (user != null) Navigator.pushReplacementNamed(context, AppRoutes.events);
+          if (user != null) {
+            Navigator.pushReplacementNamed(context, AppRoutes.events);
+          }
         },
         error: (error, _) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sign Up failed: $error')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${AppStrings.signUpFailed}: $error')),
+          );
         },
       );
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      appBar: AppBar(title: const Text(AppStrings.signUpTitle)),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.space16),
         child: AuthForm(
           formKey: _formKey,
           emailController: _emailController,
           passwordController: _passwordController,
           isLoading: isLoading,
-          buttonText: 'Sign Up',
+          buttonText: AppStrings.signUpTitle,
           onSubmit: _signUp,
         ),
       ),
     );
   }
 }
-

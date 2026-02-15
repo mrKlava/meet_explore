@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/app_state_views.dart';
+import '../../../../routes/app_routes.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/event.dart';
 import '../providers/events_provider.dart';
-import '../../../../routes/app_routes.dart';
+import '../widgets/event_detail_content.dart';
+import '../widgets/event_participation_button.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
@@ -39,15 +42,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         SnackBar(
           content: Text(
             isParticipating
-                ? 'You cancelled your participation.'
-                : 'You are participating in this event.',
+                ? AppStrings.participationCancelled
+                : AppStrings.participationSuccess,
           ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update participation: $e')),
+        SnackBar(
+          content: Text('${AppStrings.participationFailedPrefix}: $e'),
+        ),
       );
     } finally {
       if (mounted) {
@@ -56,6 +61,29 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         });
       }
     }
+  }
+
+  void _showSignInDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text(AppStrings.signInRequired),
+        content: const Text(AppStrings.signInRequiredMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(AppStrings.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.login);
+            },
+            child: const Text(AppStrings.drawerSignIn),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -67,161 +95,37 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final participationAsync = ref.watch(isParticipatingProvider(widget.eventId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Event Details')),
+      appBar: AppBar(title: const Text(AppStrings.eventDetailsTitle)),
       body: eventAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        loading: () => const AppLoadingView(),
+        error: (error, _) => AppErrorView(error: error, prefix: AppStrings.errorPrefix),
         data: (event) {
           if (event == null) {
-            return const Center(child: Text('Event not found'));
+            return const AppEmptyView(message: AppStrings.eventNotFound);
           }
 
           final rawIsParticipating = participationAsync.maybeWhen(
             data: (value) => value,
             orElse: () => false,
           );
-
           final isParticipating = isAuthenticated && rawIsParticipating;
           final participationReady = !isAuthenticated || participationAsync.hasValue;
 
           return Stack(
             children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Image.network(
-                      event.imageUrl,
-                      height: 250,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.person, size: 18),
-                              const SizedBox(width: 6),
-                              Text('Hosted by ${event.host}'),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Icons.category, size: 18),
-                              const SizedBox(width: 6),
-                              Text(event.category),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today, size: 18),
-                              const SizedBox(width: 6),
-                              Text(
-                                DateFormat('MMM dd, yyyy - HH:mm')
-                                    .format(event.dateTime),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 18),
-                              const SizedBox(width: 6),
-                              Text(event.location),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Icons.euro, size: 18),
-                              const SizedBox(width: 6),
-                              Text(
-                                event.price > 0
-                                    ? event.price.toStringAsFixed(2)
-                                    : 'Free',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            event.detailedDescription,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              EventDetailContent(event: event),
               if (participationReady)
                 Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 16,
-                  child: ElevatedButton.icon(
-                    onPressed: _isUpdatingParticipation
-                        ? null
-                        : isAuthenticated
-                            ? () => _toggleParticipation(event, isParticipating)
-                            : () {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: const Text('Sign In Required'),
-                                    content: const Text(
-                                      'You need to sign in to participate in events.',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Navigator.pushNamed(context, AppRoutes.login);
-                                        },
-                                        child: const Text('Sign In'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                    icon: Icon(
-                      isParticipating
-                          ? Icons.cancel
-                          : Icons.check_circle_outline,
-                    ),
-                    label: Text(
-                      isParticipating
-                          ? 'Cancel Participation'
-                          : 'Participate',
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isParticipating
-                          ? Colors.red
-                          : Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 6,
-                    ),
+                  left: AppDimens.space16,
+                  right: AppDimens.space16,
+                  bottom: AppDimens.space16,
+                  child: EventParticipationButton(
+                    isLoading: _isUpdatingParticipation,
+                    isParticipating: isParticipating,
+                    isAuthenticated: isAuthenticated,
+                    onAuthenticatedTap: () =>
+                        _toggleParticipation(event, isParticipating),
+                    onGuestTap: _showSignInDialog,
                   ),
                 ),
             ],
@@ -231,9 +135,3 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     );
   }
 }
-
-
-
-
-
-
