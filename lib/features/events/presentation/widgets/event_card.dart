@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../data/models/event_model.dart';
-import '../screens/event_detail_screen.dart';
 import 'package:intl/intl.dart';
 
+import '../../domain/entities/event.dart';
+import '../screens/event_detail_screen.dart';
+
 class EventCard extends StatelessWidget {
-  final EventModel event;
+  final Event event;
 
   const EventCard({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
     final formattedDate =
-        DateFormat('MMM dd, yyyy • HH:mm').format(event.dateTime);
+        DateFormat('MMM dd, yyyy - HH:mm').format(event.dateTime);
 
     return GestureDetector(
       onTap: () {

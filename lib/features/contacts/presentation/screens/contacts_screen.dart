@@ -21,6 +21,15 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
 
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 

@@ -1,99 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../data/models/event_model.dart';
-import '../../data/services/events_service.dart';
 
-class EventDetailScreen extends StatefulWidget {
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../domain/entities/event.dart';
+import '../providers/events_provider.dart';
+import '../../../../routes/app_routes.dart';
+
+class EventDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
 
   const EventDetailScreen({super.key, required this.eventId});
 
   @override
-  State<EventDetailScreen> createState() => _EventDetailScreenState();
+  ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
 }
 
-class _EventDetailScreenState extends State<EventDetailScreen> {
-  final EventsService _eventsService = EventsService();
+class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
+  bool _isUpdatingParticipation = false;
 
-  late Future<EventModel?> _eventFuture;
-  bool _isParticipating = false; // tracks participation
-  bool _loadingParticipation = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _eventFuture = _eventsService.fetchEventById(widget.eventId);
-
-    // Check if user participates
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      _eventsService.isParticipating(widget.eventId).then((value) {
-        setState(() {
-          _isParticipating = value;
-          _loadingParticipation = false;
-        });
-      });
-    } else {
-      _loadingParticipation = false;
-    }
-  }
-
-  void _toggleParticipation(EventModel event) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // Should not happen; button should be disabled
-      return;
-    }
-
+  Future<void> _toggleParticipation(Event event, bool isParticipating) async {
     setState(() {
-      _isParticipating = !_isParticipating;
+      _isUpdatingParticipation = true;
     });
 
     try {
-      if (_isParticipating) {
-        await _eventsService.participate(event.id);
+      if (isParticipating) {
+        await ref.read(eventRepositoryProvider).cancelParticipation(event.id);
       } else {
-        await _eventsService.cancelParticipation(event.id);
+        await ref.read(eventRepositoryProvider).participate(event.id);
       }
 
+      ref.invalidate(isParticipatingProvider(widget.eventId));
+      ref.invalidate(participatingEventsProvider);
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _isParticipating
-                ? 'You are participating in this event.'
-                : 'You cancelled your participation.',
+            isParticipating
+                ? 'You cancelled your participation.'
+                : 'You are participating in this event.',
           ),
         ),
       );
     } catch (e) {
-      setState(() {
-        _isParticipating = !_isParticipating;
-      });
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update participation: $e')),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingParticipation = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isUser = FirebaseAuth.instance.currentUser != null;
+    final authState = ref.watch(authStateProvider);
+    final isAuthenticated = authState.value != null;
+
+    final eventAsync = ref.watch(eventByIdProvider(widget.eventId));
+    final participationAsync = ref.watch(isParticipatingProvider(widget.eventId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Event Details')),
-      body: FutureBuilder<EventModel?>(
-        future: _eventFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data == null) {
+      body: eventAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('Error: $error')),
+        data: (event) {
+          if (event == null) {
             return const Center(child: Text('Event not found'));
           }
 
-          final event = snapshot.data!;
+          final rawIsParticipating = participationAsync.maybeWhen(
+            data: (value) => value,
+            orElse: () => false,
+          );
+
+          final isParticipating = isAuthenticated && rawIsParticipating;
+          final participationReady = !isAuthenticated || participationAsync.hasValue;
 
           return Stack(
             children: [
@@ -141,8 +130,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             children: [
                               const Icon(Icons.calendar_today, size: 18),
                               const SizedBox(width: 6),
-                              Text(DateFormat('MMM dd, yyyy • HH:mm')
-                                  .format(event.dateTime)),
+                              Text(
+                                DateFormat('MMM dd, yyyy - HH:mm')
+                                    .format(event.dateTime),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -158,9 +149,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             children: [
                               const Icon(Icons.euro, size: 18),
                               const SizedBox(width: 6),
-                              Text(event.price > 0
-                                  ? event.price.toStringAsFixed(2)
-                                  : 'Free'),
+                              Text(
+                                event.price > 0
+                                    ? event.price.toStringAsFixed(2)
+                                    : 'Free',
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -174,47 +167,52 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   ],
                 ),
               ),
-
-              // Sticky bottom button
-              if (!_loadingParticipation)
+              if (participationReady)
                 Positioned(
                   left: 16,
                   right: 16,
                   bottom: 16,
                   child: ElevatedButton.icon(
-                    onPressed: isUser
-                        ? () => _toggleParticipation(event)
-                        : () {
-                            // Guest: show dialog
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: const Text('Sign In Required'),
-                                content: const Text(
-                                    'You need to sign in to participate in events.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
+                    onPressed: _isUpdatingParticipation
+                        ? null
+                        : isAuthenticated
+                            ? () => _toggleParticipation(event, isParticipating)
+                            : () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Sign In Required'),
+                                    content: const Text(
+                                      'You need to sign in to participate in events.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.pushNamed(context, AppRoutes.login);
+                                        },
+                                        child: const Text('Sign In'),
+                                      ),
+                                    ],
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      // TODO: navigate to login screen
-                                      Navigator.pushNamed(context, '/login');
-                                    },
-                                    child: const Text('Sign In'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                                );
+                              },
                     icon: Icon(
-                        _isParticipating ? Icons.cancel : Icons.check_circle_outline),
+                      isParticipating
+                          ? Icons.cancel
+                          : Icons.check_circle_outline,
+                    ),
                     label: Text(
-                        _isParticipating ? 'Cancel Participation' : 'Participate'),
+                      isParticipating
+                          ? 'Cancel Participation'
+                          : 'Participate',
+                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isParticipating
+                      backgroundColor: isParticipating
                           ? Colors.red
                           : Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -233,3 +231,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 }
+
+
+
+
+
+

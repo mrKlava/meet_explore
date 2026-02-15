@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:meet_explore/features/auth/presentation/providers/auth_controller.dart';
+import 'package:meet_explore/features/auth/presentation/providers/auth_provider.dart';
+import 'package:meet_explore/routes/app_routes.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
+    final authState = ref.watch(authStateProvider);
 
     // Determine if user is signed in
-    final isUser = authState.when(
+    final isAuthenticated = authState.when(
       data: (user) => user != null,
       loading: () => false,
-      error: (_, __) => false,
+      error: (_, _) => false,
     );
 
     return Drawer(
@@ -33,18 +34,18 @@ class AppDrawer extends ConsumerWidget {
             leading: const Icon(Icons.event),
             title: const Text('Events'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/events');
+              Navigator.pushReplacementNamed(context, AppRoutes.events);
             },
           ),
 
-          if (isUser)
+          if (isAuthenticated)
             ListTile(
               leading: const Icon(Icons.bookmark_added_outlined),
               title: const Text('Participating'),
               onTap: () {
                 Navigator.pushReplacementNamed(
                   context,
-                  '/events-participating',
+                  AppRoutes.participatingEvents,
                 );
               },
             ),
@@ -53,7 +54,7 @@ class AppDrawer extends ConsumerWidget {
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/about');
+              Navigator.pushReplacementNamed(context, AppRoutes.about);
             },
           ),
 
@@ -61,21 +62,24 @@ class AppDrawer extends ConsumerWidget {
             leading: const Icon(Icons.email_outlined),
             title: const Text('Contacts'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/contacts');
+              Navigator.pushReplacementNamed(context, AppRoutes.contacts);
             },
           ),
 
           const Spacer(),
 
           ListTile(
-            leading: Icon(isUser ? Icons.logout : Icons.login),
-            title: Text(isUser ? 'Logout' : 'Sign In'),
+            leading: Icon(isAuthenticated ? Icons.logout : Icons.login),
+            title: Text(isAuthenticated ? 'Logout' : 'Sign In'),
             onTap: () async {
-              if (isUser) {
-                await ref.read(authControllerProvider.notifier).signOut();
-                // No Navigator call here
+              Navigator.pop(context); // close drawer first
+              if (isAuthenticated) {
+                await ref.read(authRepositoryProvider).signOut();
+                if (!context.mounted) return;
+                // optional: navigate to events screen
+                Navigator.pushReplacementNamed(context, AppRoutes.events);
               } else {
-                Navigator.pushNamed(context, '/login');
+                Navigator.pushNamed(context, AppRoutes.login);
               }
             },
           ),
@@ -84,3 +88,4 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 }
+

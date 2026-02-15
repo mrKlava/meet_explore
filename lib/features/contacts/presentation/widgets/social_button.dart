@@ -19,10 +19,12 @@ class SocialButton extends StatelessWidget {
         url,
         mode: LaunchMode.externalApplication,
       )) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Could not open $url')));
       }
     } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error: $e')));
     }
