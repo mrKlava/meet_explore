@@ -6,6 +6,7 @@ import '../features/events/presentation/screens/events_screen.dart';
 import '../features/events/presentation/screens/events_participating_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/about/presentation/screens/about_screen.dart';
+import '../features/admin/presentation/screens/admin_screen.dart';
 import 'package:meet_explore/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:meet_explore/features/auth/presentation/screens/sign_up_screen.dart';
 
@@ -15,6 +16,7 @@ class AppRoutes {
   static const eventDetail = '/event-detail';
   static const about = '/about';
   static const contacts = '/contacts';
+  static const admin = '/admin';
   static const login = '/login';
   static const signup = '/signup';
 
@@ -22,6 +24,7 @@ class AppRoutes {
     events: (_) => const EventsScreen(),
     participatingEvents: (_) => const EventsParticipatingScreen(),
     about: (_) => const AboutScreen(),
+    admin: (_) => const AdminScreen(),
     contacts: (_) => const ContactsScreen(),
     login: (_) => const SignInScreen(),
     signup: (_) => const SignUpScreen(),

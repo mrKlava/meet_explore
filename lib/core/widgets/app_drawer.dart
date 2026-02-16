@@ -11,6 +11,7 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final isAdmin = ref.watch(isAdminProvider);
 
     final isAuthenticated = authState.when(
       data: (user) => user != null,
@@ -55,6 +56,14 @@ class AppDrawer extends ConsumerWidget {
               Navigator.pushReplacementNamed(context, AppRoutes.about);
             },
           ),
+          if (isAdmin)
+            ListTile(
+              leading: const Icon(Icons.admin_panel_settings_outlined),
+              title: const Text(AppStrings.drawerAdmin),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, AppRoutes.admin);
+              },
+            ),
           const Spacer(),
           ListTile(
             leading: Icon(isAuthenticated ? Icons.logout : Icons.login),

@@ -64,6 +64,7 @@ class AppStrings {
   static const String drawerEvents = 'Events';
   static const String drawerParticipating = 'Participating';
   static const String drawerAbout = 'About';
+  static const String drawerAdmin = 'Admin';
   static const String drawerContacts = 'Contacts';
   static const String drawerLogout = 'Logout';
   static const String drawerSignIn = 'Sign In';
@@ -106,6 +107,8 @@ class AppStrings {
   static const String cancel = 'Cancel';
 
   static const String aboutTitle = 'About';
+  static const String adminTitle = 'Admin Panel';
+  static const String adminNoAccess = 'You do not have access to this page.';
 
   static const String contactTitle = 'Contact Us';
   static const String contactSuccess = 'Message sent successfully!';

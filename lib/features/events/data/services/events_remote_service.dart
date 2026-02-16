@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/event_model.dart';
+import '../../domain/entities/event.dart';
 
 class EventsRemoteService {
   final FirebaseFirestore _firestore;
@@ -18,6 +19,15 @@ class EventsRemoteService {
         .collection('events')
         .where('isPublished', isEqualTo: true)
         .orderBy('dateStart')
+        .get();
+
+    return snapshot.docs.map((doc) => EventModel.fromFirestore(doc)).toList();
+  }
+
+  Future<List<EventModel>> fetchAllEventsForAdmin() async {
+    final snapshot = await _firestore
+        .collection('events')
+        .orderBy('dateStart', descending: true)
         .get();
 
     return snapshot.docs.map((doc) => EventModel.fromFirestore(doc)).toList();
@@ -144,5 +154,77 @@ class EventsRemoteService {
         .get();
 
     return snapshot.docs.map((doc) => doc.id).toList();
+  }
+
+  Future<void> updateEventPublishStatus({
+    required String eventId,
+    required bool isPublished,
+  }) async {
+    await _firestore.collection('events').doc(eventId).update({
+      'isPublished': isPublished,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateEventStatus({
+    required String eventId,
+    required String status,
+  }) async {
+    await _firestore.collection('events').doc(eventId).update({
+      'status': status,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> createEvent(Event event) async {
+    final docRef = _firestore.collection('events').doc();
+    await docRef.set(_eventToFirestoreMap(event, includeCreatedAt: true));
+  }
+
+  Future<void> updateEvent(Event event) async {
+    await _firestore
+        .collection('events')
+        .doc(event.id)
+        .update(_eventToFirestoreMap(event, includeCreatedAt: false));
+  }
+
+  Future<void> deleteEvent(String eventId) async {
+    await _firestore.collection('events').doc(eventId).delete();
+  }
+
+  Map<String, dynamic> _eventToFirestoreMap(
+    Event event, {
+    required bool includeCreatedAt,
+  }) {
+    final map = <String, dynamic>{
+      'title': event.title,
+      'imageUrl': event.imageUrl,
+      'category': event.category,
+      'host': event.host,
+      'status': event.status,
+      'isPublished': event.isPublished,
+      'places': event.places,
+      'price': event.price,
+      'dateStart': Timestamp.fromDate(event.dateStart),
+      'dateEnd':
+          event.dateEnd != null ? Timestamp.fromDate(event.dateEnd!) : null,
+      'city': event.city,
+      'country': event.country,
+      'address': event.address,
+      'geo': (event.geoLat != null && event.geoLng != null)
+          ? GeoPoint(event.geoLat!, event.geoLng!)
+          : null,
+      'locationUrl': event.locationUrl,
+      'description': event.description,
+      'info': event.info,
+      'infoImportant': event.infoImportant,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (includeCreatedAt) {
+      map['participantsCount'] = 0;
+      map['createdAt'] = FieldValue.serverTimestamp();
+    }
+    return map;
   }
 }

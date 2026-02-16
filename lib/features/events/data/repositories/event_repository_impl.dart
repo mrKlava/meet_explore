@@ -43,6 +43,12 @@ class EventRepositoryImpl implements EventRepository {
   }
 
   @override
+  Future<List<Event>> fetchAllEventsForAdmin() async {
+    final models = await remoteService.fetchAllEventsForAdmin();
+    return models.map(_toEntity).toList();
+  }
+
+  @override
   Future<Event?> fetchEventById(String id) async {
     final model = await remoteService.fetchEventById(id);
     if (model == null) return null;
@@ -76,5 +82,42 @@ class EventRepositoryImpl implements EventRepository {
 
     final events = await fetchEvents();
     return events.where((event) => ids.contains(event.id)).toList();
+  }
+
+  @override
+  Future<void> updateEventPublishStatus({
+    required String eventId,
+    required bool isPublished,
+  }) {
+    return remoteService.updateEventPublishStatus(
+      eventId: eventId,
+      isPublished: isPublished,
+    );
+  }
+
+  @override
+  Future<void> updateEventStatus({
+    required String eventId,
+    required String status,
+  }) {
+    return remoteService.updateEventStatus(
+      eventId: eventId,
+      status: status,
+    );
+  }
+
+  @override
+  Future<void> createEvent(Event event) {
+    return remoteService.createEvent(event);
+  }
+
+  @override
+  Future<void> updateEvent(Event event) {
+    return remoteService.updateEvent(event);
+  }
+
+  @override
+  Future<void> deleteEvent(String eventId) {
+    return remoteService.deleteEvent(eventId);
   }
 }
